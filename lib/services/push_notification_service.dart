@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 import '../firebase_options.dart';
+import 'messaging_worker.dart';
 
 class PushNotificationService extends ChangeNotifier {
   final FirebaseMessaging _messaging = FirebaseMessaging.instance;
@@ -109,9 +110,11 @@ class PushNotificationService extends ChangeNotifier {
 
   Future<void> _loadToken() async {
     try {
+      final serviceWorkerScriptPath =
+          await ensureMessagingServiceWorkerActive();
       token = await _messaging.getToken(
         vapidKey: DefaultFirebaseOptions.vapidKey,
-        serviceWorkerScriptPath: 'firebase-messaging-sw.js',
+        serviceWorkerScriptPath: serviceWorkerScriptPath,
       );
       statusMessage = token == null
           ? 'Permission granted, but Firebase did not return a token. Reload the page and try again.'
@@ -119,7 +122,9 @@ class PushNotificationService extends ChangeNotifier {
     } catch (error) {
       token = null;
       final errorText = error.toString();
-      statusMessage = errorText.contains('Failed to fetch')
+      statusMessage = errorText.contains('no active Service Worker')
+          ? 'The notification worker is updating. Reload the page once, then press Refresh notification token.'
+          : errorText.contains('Failed to fetch')
           ? 'Could not reach Firebase to generate a device token. Open the deployed HTTPS site in Chrome or Edge and press Refresh notification token.'
           : 'Could not generate a Firebase device token: $error';
     }
