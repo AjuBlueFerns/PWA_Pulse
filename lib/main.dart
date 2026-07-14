@@ -165,7 +165,10 @@ class _HomePageState extends State<HomePage> {
                       LayoutBuilder(
                         builder: (context, constraints) {
                           final wide = constraints.maxWidth >= 780;
-                          final intro = _Intro(installer: _installer);
+                          final intro = _Intro(
+                            installer: _installer,
+                            versionLabel: widget.versionLabel,
+                          );
                           final card = _NotificationCard(
                             service: service,
                             startupError: widget.startupError,
@@ -263,31 +266,56 @@ class _Header extends StatelessWidget {
 }
 
 class _Intro extends StatelessWidget {
-  const _Intro({required this.installer});
+  const _Intro({required this.installer, required this.versionLabel});
 
   final PwaInstallController installer;
+  final String versionLabel;
 
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 7),
-          decoration: BoxDecoration(
-            color: const Color(0x1835D0BA),
-            borderRadius: BorderRadius.circular(99),
-            border: Border.all(color: const Color(0x5535D0BA)),
-          ),
-          child: const Text(
-            'PROGRESSIVE WEB APP',
-            style: TextStyle(
-              color: Color(0xFF67E4D1),
-              fontSize: 11,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 1.4,
+        Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 7),
+              decoration: BoxDecoration(
+                color: const Color(0x1835D0BA),
+                borderRadius: BorderRadius.circular(99),
+                border: Border.all(color: const Color(0x5535D0BA)),
+              ),
+              child: const Text(
+                'PROGRESSIVE WEB APP',
+                style: TextStyle(
+                  color: Color(0xFF67E4D1),
+                  fontSize: 11,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 1.4,
+                ),
+              ),
             ),
-          ),
+            Container(
+              key: const ValueKey('build-version-badge'),
+              padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 7),
+              decoration: BoxDecoration(
+                color: const Color(0x182D73FF),
+                borderRadius: BorderRadius.circular(99),
+                border: Border.all(color: const Color(0x552D73FF)),
+              ),
+              child: Text(
+                'BUILD $versionLabel',
+                style: const TextStyle(
+                  color: Color(0xFF9AB9FF),
+                  fontSize: 11,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 1.1,
+                ),
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: 24),
         Text(
@@ -397,13 +425,11 @@ class _NotificationCard extends StatelessWidget {
                         ),
                       ),
                     ),
-                    if (current.token != null) ...[
-                      const SizedBox(height: 22),
-                      _TokenField(
-                        token: current.token!,
-                        onCopy: current.copyToken,
-                      ),
-                    ],
+                    const SizedBox(height: 22),
+                    _TokenField(
+                      token: current.token,
+                      onCopy: current.token == null ? null : current.copyToken,
+                    ),
                     if (current.lastMessage != null) ...[
                       const SizedBox(height: 22),
                       const Divider(),
@@ -425,8 +451,8 @@ class _NotificationCard extends StatelessWidget {
 class _TokenField extends StatelessWidget {
   const _TokenField({required this.token, required this.onCopy});
 
-  final String token;
-  final Future<void> Function() onCopy;
+  final String? token;
+  final Future<void> Function()? onCopy;
 
   @override
   Widget build(BuildContext context) {
@@ -454,16 +480,25 @@ class _TokenField extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Expanded(
-                child: SelectableText(
-                  token,
-                  maxLines: 3,
-                  style: const TextStyle(
-                    color: Color(0xFFB8C7D9),
-                    fontFamily: 'monospace',
-                    fontSize: 11,
-                    height: 1.45,
-                  ),
-                ),
+                child: token == null
+                    ? const Text(
+                        'Enable notifications to generate this device token.',
+                        style: TextStyle(
+                          color: Color(0xFF8294AA),
+                          fontSize: 12,
+                          height: 1.4,
+                        ),
+                      )
+                    : SelectableText(
+                        token!,
+                        maxLines: 3,
+                        style: const TextStyle(
+                          color: Color(0xFFB8C7D9),
+                          fontFamily: 'monospace',
+                          fontSize: 11,
+                          height: 1.45,
+                        ),
+                      ),
               ),
               const SizedBox(width: 8),
               IconButton.filledTonal(
@@ -527,6 +562,8 @@ class _SetupRequired extends StatelessWidget {
             Expanded(child: Text('Setup instructions are in README.md.')),
           ],
         ),
+        const SizedBox(height: 22),
+        const _TokenField(token: null, onCopy: null),
       ],
     );
   }
