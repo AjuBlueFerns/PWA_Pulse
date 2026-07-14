@@ -1,5 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 import 'firebase_options.dart';
 import 'pwa_install/pwa_install.dart';
@@ -10,6 +11,16 @@ Future<void> main() async {
 
   PushNotificationService? notifications;
   Object? startupError;
+  var versionLabel = '1.0.1+2';
+
+  try {
+    final packageInfo = await PackageInfo.fromPlatform();
+    versionLabel = packageInfo.buildNumber.isEmpty
+        ? packageInfo.version
+        : '${packageInfo.version}+${packageInfo.buildNumber}';
+  } catch (_) {
+    // Keep the fallback version visible if platform metadata is unavailable.
+  }
 
   if (DefaultFirebaseOptions.isConfigured) {
     try {
@@ -23,14 +34,26 @@ Future<void> main() async {
     }
   }
 
-  runApp(PwaPushApp(notifications: notifications, startupError: startupError));
+  runApp(
+    PwaPushApp(
+      notifications: notifications,
+      startupError: startupError,
+      versionLabel: versionLabel,
+    ),
+  );
 }
 
 class PwaPushApp extends StatelessWidget {
-  const PwaPushApp({super.key, this.notifications, this.startupError});
+  const PwaPushApp({
+    super.key,
+    this.notifications,
+    this.startupError,
+    this.versionLabel = '1.0.1+2',
+  });
 
   final PushNotificationService? notifications;
   final Object? startupError;
+  final String versionLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -68,7 +91,11 @@ class PwaPushApp extends StatelessWidget {
           ),
         ),
       ),
-      home: HomePage(notifications: notifications, startupError: startupError),
+      home: HomePage(
+        notifications: notifications,
+        startupError: startupError,
+        versionLabel: versionLabel,
+      ),
     );
   }
 }
@@ -78,10 +105,12 @@ class HomePage extends StatefulWidget {
     super.key,
     required this.notifications,
     required this.startupError,
+    required this.versionLabel,
   });
 
   final PushNotificationService? notifications;
   final Object? startupError;
+  final String versionLabel;
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -128,7 +157,10 @@ class _HomePageState extends State<HomePage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _Header(installer: _installer),
+                      _Header(
+                        installer: _installer,
+                        versionLabel: widget.versionLabel,
+                      ),
                       const SizedBox(height: 72),
                       LayoutBuilder(
                         builder: (context, constraints) {
@@ -170,9 +202,10 @@ class _HomePageState extends State<HomePage> {
 }
 
 class _Header extends StatelessWidget {
-  const _Header({required this.installer});
+  const _Header({required this.installer, required this.versionLabel});
 
   final PwaInstallController installer;
+  final String versionLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -188,13 +221,28 @@ class _Header extends StatelessWidget {
           child: const Icon(Icons.bolt_rounded, color: Color(0xFF071522)),
         ),
         const SizedBox(width: 12),
-        const Text(
-          'PULSE',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w900,
-            letterSpacing: 2.5,
-          ),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'PULSE',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w900,
+                letterSpacing: 2.5,
+              ),
+            ),
+            Text(
+              'VERSION $versionLabel',
+              key: const ValueKey('app-version'),
+              style: const TextStyle(
+                color: Color(0xFF8294AA),
+                fontSize: 9,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.8,
+              ),
+            ),
+          ],
         ),
         const Spacer(),
         ListenableBuilder(

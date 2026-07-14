@@ -5,13 +5,13 @@ importScripts('flutter_service_worker.js');
 // Keep these values in sync with lib/firebase_options.dart.
 // Firebase web configuration is public client configuration, not a server secret.
 const firebaseConfig = {
-  apiKey: 'YOUR_API_KEY',
-  appId: 'YOUR_APP_ID',
-  messagingSenderId: 'YOUR_MESSAGING_SENDER_ID',
-  projectId: 'YOUR_PROJECT_ID',
-  authDomain: 'YOUR_PROJECT_ID.firebaseapp.com',
-  storageBucket: 'YOUR_PROJECT_ID.firebasestorage.app',
-  measurementId: 'YOUR_MEASUREMENT_ID',
+  apiKey: 'AIzaSyAXXuhr0Lcp3bBibQU56OMlhri6dG3Fd6c',
+  appId: '1:590666906347:web:a73c22cf68e81d09495cae',
+  messagingSenderId: '590666906347',
+  projectId: 'my-second-project-14356',
+  authDomain: 'my-second-project-14356.firebaseapp.com',
+  storageBucket: 'my-second-project-14356.appspot.com',
+  measurementId: 'G-9SEF32L6RK',
 };
 
 // This version matches the Firebase JS SDK supported by firebase_core_web 3.9.1.

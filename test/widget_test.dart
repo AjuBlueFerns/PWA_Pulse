@@ -8,6 +8,7 @@ void main() {
     await tester.pumpWidget(const PwaPushApp());
 
     expect(find.text('PULSE'), findsOneWidget);
+    expect(find.text('VERSION 1.0.1+2'), findsOneWidget);
     expect(find.text('Stay in the loop.\nWherever you are.'), findsOneWidget);
     expect(find.text('Connect your Firebase project'), findsOneWidget);
   });
