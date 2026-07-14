@@ -28,7 +28,8 @@ jobs:
           cache: true
 
       - name: Stamp deployment version
-        run: sed -i "s/^version:.*/version: 1.0.${GITHUB_RUN_NUMBER}+${GITHUB_RUN_ATTEMPT}/" pubspec.yaml
+        run: |
+          sed -i "s/^version:.*/version: 1.0.${GITHUB_RUN_NUMBER}+${GITHUB_RUN_ATTEMPT}/" pubspec.yaml
 
       - name: Install dependencies
         run: flutter pub get
