@@ -29,15 +29,18 @@ messaging.onBackgroundMessage((payload) => {
   const title = payload.data?.title || 'Pulse update';
   const options = {
     body: payload.data?.body || 'You have a new update.',
-    icon: '/icons/Icon-192.png',
-    badge: '/icons/Icon-192.png',
-    data: { link: payload.data?.link || '/' },
+    icon: 'icons/Icon-192.png',
+    badge: 'icons/Icon-192.png',
+    data: { link: payload.data?.link || self.registration.scope },
   };
   self.registration.showNotification(title, options);
 });
 
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-  const target = event.notification.data?.link || '/';
+  const target = new URL(
+    event.notification.data?.link || self.registration.scope,
+    self.registration.scope,
+  ).href;
   event.waitUntil(clients.openWindow(target));
 });

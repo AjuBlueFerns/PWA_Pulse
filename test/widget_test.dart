@@ -1,7 +1,12 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:pwa_push_starter/firebase_options.dart';
 import 'package:pwa_push_starter/main.dart';
 
 void main() {
+  test('Firebase web configuration is enabled', () {
+    expect(DefaultFirebaseOptions.isConfigured, isTrue);
+  });
+
   testWidgets('shows the PWA landing page and Firebase setup state', (
     tester,
   ) async {

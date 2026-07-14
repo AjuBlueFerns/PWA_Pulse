@@ -18,10 +18,14 @@ class DefaultFirebaseOptions {
     measurementId: 'G-9SEF32L6RK',
   );
   static bool get isConfigured =>
-      web.apiKey != 'AIzaSyAXXuhr0Lcp3bBibQU56OMlhri6dG3Fd6c' &&
-      web.appId != '1:590666906347:web:a73c22cf68e81d09495cae' &&
-      vapidKey !=
-          'BCvCJv9V6q9tb5rm3V64_7xKTE5PdndjKBkFwFSz3t7a7ckgTAYdXp8YrIjrmqAwiyLe_hzPwg5IG67bWD8xJ50';
+      web.apiKey.isNotEmpty &&
+      web.appId.isNotEmpty &&
+      web.messagingSenderId.isNotEmpty &&
+      web.projectId.isNotEmpty &&
+      vapidKey.isNotEmpty &&
+      !web.apiKey.contains('YOUR_') &&
+      !web.appId.contains('YOUR_') &&
+      !vapidKey.contains('YOUR_');
 
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) return web;
