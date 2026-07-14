@@ -10,6 +10,12 @@
     );
   }
 
+  function delay(milliseconds) {
+    return new Promise((resolve) => {
+      window.setTimeout(resolve, milliseconds);
+    });
+  }
+
   function waitForActiveWorker(registration) {
     if (registration.active) {
       return Promise.resolve(registration.active.scriptURL);
@@ -36,7 +42,7 @@
           resolve(worker.scriptURL);
         } else if (worker.state === 'redundant') {
           window.clearTimeout(timeout);
-          reject(new Error('Firebase service worker became redundant.'));
+          resolve('');
         }
       });
     });
@@ -50,20 +56,39 @@
     const baseUrl = new URL(document.baseURI);
     const scopeUrl = new URL('.', baseUrl).href;
     const scriptUrl = new URL(scriptPath, baseUrl).href;
-    const registrations = await navigator.serviceWorker.getRegistrations();
-    const existing = registrations.find((registration) => {
-      const workerUrl = activeWorkerUrl(registration);
-      return (
-        registration.scope === scopeUrl &&
-        workerUrl.includes('firebase-messaging-sw.js')
-      );
-    });
 
-    const registration =
-      existing ||
-      (await navigator.serviceWorker.register(scriptUrl, { scope: scopeUrl }));
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+      const registrations = await navigator.serviceWorker.getRegistrations();
+      const existing = registrations.find((registration) => {
+        const workerUrl = activeWorkerUrl(registration);
+        return (
+          registration.scope === scopeUrl &&
+          workerUrl.includes('firebase-messaging-sw.js')
+        );
+      });
 
-    const activeUrl = await waitForActiveWorker(registration);
-    return activeUrl || scriptUrl;
+      const registration =
+        existing ||
+        (await navigator.serviceWorker.register(scriptUrl, {
+          scope: scopeUrl,
+        }));
+
+      const activeUrl = await waitForActiveWorker(registration);
+      if (activeUrl) {
+        return activeUrl;
+      }
+
+      await delay(250);
+    }
+
+    const readyRegistration = await navigator.serviceWorker.ready;
+    if (
+      readyRegistration.scope === scopeUrl &&
+      readyRegistration.active?.scriptURL.includes('firebase-messaging-sw.js')
+    ) {
+      return readyRegistration.active.scriptURL;
+    }
+
+    throw new Error('Firebase service worker is not active yet.');
   };
 })();

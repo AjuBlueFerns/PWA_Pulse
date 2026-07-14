@@ -122,7 +122,10 @@ class PushNotificationService extends ChangeNotifier {
     } catch (error) {
       token = null;
       final errorText = error.toString();
-      statusMessage = errorText.contains('no active Service Worker')
+      statusMessage =
+          errorText.contains('no active Service Worker') ||
+              errorText.contains('service worker is not active') ||
+              errorText.contains('service worker became redundant')
           ? 'The notification worker is updating. Reload the page once, then press Refresh notification token.'
           : errorText.contains('Failed to fetch')
           ? 'Could not reach Firebase to generate a device token. Open the deployed HTTPS site in Chrome or Edge and press Refresh notification token.'
