@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 import '../firebase_options.dart';
+import 'browser_notification.dart';
 import 'messaging_worker.dart';
 
 class PushNotificationService extends ChangeNotifier {
@@ -31,12 +32,25 @@ class PushNotificationService extends ChangeNotifier {
 
     await _syncPermissionState(loadTokenIfAllowed: true);
 
-    _foregroundMessages = FirebaseMessaging.onMessage.listen((message) {
+    _foregroundMessages = FirebaseMessaging.onMessage.listen((message) async {
       final notification = message.notification;
-      lastMessage = notification == null
-          ? message.data.toString()
-          : '${notification.title ?? 'Notification'} — ${notification.body ?? ''}';
-      statusMessage = 'A new notification arrived while Pulse was open.';
+      final title =
+          notification?.title ?? message.data['title'] ?? 'Pulse update';
+      final body =
+          notification?.body ??
+          message.data['body'] ??
+          'You have a new update.';
+      final link = message.data['link'];
+
+      lastMessage = '$title — $body';
+      final shown = await showBrowserNotification(
+        title: title,
+        body: body,
+        link: link,
+      );
+      statusMessage = shown
+          ? 'A browser notification was shown.'
+          : 'A new notification arrived while Pulse was open.';
       notifyListeners();
     });
 
