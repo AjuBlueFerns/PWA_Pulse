@@ -1,7 +1,3 @@
-// Flutter generates this file during `flutter build web`. Importing it makes
-// this one worker handle both the offline app shell and Firebase background push.
-importScripts('flutter_service_worker.js');
-
 // Keep these values in sync with lib/firebase_options.dart.
 // Firebase web configuration is public client configuration, not a server secret.
 const firebaseConfig = {
@@ -20,6 +16,17 @@ importScripts('https://www.gstatic.com/firebasejs/12.15.0/firebase-messaging-com
 
 firebase.initializeApp(firebaseConfig);
 const messaging = firebase.messaging();
+
+self.addEventListener('install', () => {
+  self.skipWaiting();
+});
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil(self.clients.claim());
+});
+
+// Keep a fetch handler so the Firebase worker also satisfies PWA install checks.
+self.addEventListener('fetch', () => {});
 
 messaging.onBackgroundMessage((payload) => {
   // Firebase automatically displays console notification messages. This path
